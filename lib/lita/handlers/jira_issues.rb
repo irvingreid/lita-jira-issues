@@ -9,6 +9,7 @@ module Lita
       config :username, required: true, type: String
       config :password, required: true, type: String
       config :ignore, default: [], type: Array
+      config :format, required: false, type: String, default: 'verbose'
 
       route /[a-zA-Z]+-\d+/, :jira_message, help: {
         "KEY-123" => "Replies with information about the given JIRA key"
@@ -24,21 +25,32 @@ module Lita
 
       def handle_key(response, key)
         data = @jira.data_for_issue(key)
+        Lita.logger.debug "Jira key #{key} data: #{data}"
         return if data.empty?
-        issue = issue_details(data)
+        if config.format == 'one-line'
+          issue = oneline_details(data)
+        else
+          issue = issue_details(data)
+        end
         response.reply issue
+      end
+
+      def oneline_details(data)
+        fields = data[:fields]
+        assigned_to = fields[:assignee]
+        issue = "#{issue_link(data[:key])} - #{fields[:status][:name]}, #{assigned_to ? assigned_to[:displayName] : 'unassigned'} - #{fields[:summary]}"
       end
 
       def issue_details(data)
         key = data[:key]
-        data = data[:fields]
-        issue = summary(key, data)
-        issue << status(data)
-        issue << assignee(data)
-        issue << reporter(data)
-        issue << fix_version(data)
-        issue << priority(data)
-        issue << issue_link(key)
+        fields = data[:fields]
+        issue = summary(key, fields)
+        issue << status(fields)
+        issue << assignee(fields)
+        issue << reporter(fields)
+        issue << fix_version(fields)
+        issue << priority(fields)
+        issue << "\n" << issue_link(key)
       end
 
       def summary(key, data)
@@ -78,7 +90,7 @@ module Lita
       end
 
       def issue_link(key)
-        "\n#{config.url}/browse/#{key}"
+        "#{config.url}/browse/#{key}"
       end
     end
 

@@ -10,7 +10,12 @@ class JiraGateway
   def data_for_issue(key)
     http.basic_auth(config.username, config.password)
     response = http.get(config.url + '/rest/api/2/issue/' + key)
-    return MultiJson.load(response.body, symbolize_keys: true) if response.success?
+    if response.success?
+      Lita.logger.debug "Jira GET #{response.body}"
+      return MultiJson.load(response.body, symbolize_keys: true)
+    else
+      Lita.logger.warn "Jira GET failed: #{response.status} #{response.body}"
+    end
     {}
   end
 
