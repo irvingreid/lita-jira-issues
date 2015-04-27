@@ -27,12 +27,7 @@ module Lita
         data = @jira.data_for_issue(key)
         Lita.logger.debug "Jira key #{key} data: #{data}"
         return if data.empty?
-        if config.format == 'one-line'
-          issue = oneline_details(data)
-        else
-          issue = issue_details(data)
-        end
-        response.reply issue
+        response.reply(config.format == 'one-line' ?  oneline_details(data) : issue_details(data))
       end
 
       def oneline_details(data)

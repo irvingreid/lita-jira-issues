@@ -42,6 +42,12 @@ configuration parameter
 config.handlers.jira_issues.ignore = [ 'Jira', 'Github' ]
 ```
 
+You can select a compact one line issue summary using the format configuration parameter.
+
+```ruby
+config.handlers.jira_issues.format = 'one-line'
+```
+
 ## Usage
 
 Simply mention any JIRA valid key in upper or lower case, eg. JIRA-123, proj-8,
