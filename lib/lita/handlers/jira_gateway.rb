@@ -13,9 +13,8 @@ class JiraGateway
     if response.success?
       Lita.logger.debug "Jira GET #{response.body}"
       return MultiJson.load(response.body, symbolize_keys: true)
-    else
-      Lita.logger.warn "Jira GET failed: #{response.status} #{response.body}"
     end
+    Lita.logger.warn "Jira GET failed: #{response.status} #{response.body}"
     {}
   end
 

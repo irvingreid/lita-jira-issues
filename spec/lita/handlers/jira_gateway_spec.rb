@@ -3,7 +3,7 @@ require "spec_helper"
 describe JiraGateway do
 
   User = Struct.new(:url, :username, :password)
-  Response = Struct.new(:body, :success?)
+  Response = Struct.new(:body, :success?, :status)
 
   let(:http_mock) { spy('http') }
   subject do
