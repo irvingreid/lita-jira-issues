@@ -10,12 +10,16 @@ module Lita
       config :password, required: true, type: String
       config :ignore, default: [], type: Array
       config :format, required: false, type: String, default: 'verbose'
+      config :rooms, type: Array
 
       route /[a-zA-Z]+-\d+/, :jira_message, help: {
         "KEY-123" => "Replies with information about the given JIRA key"
       }
 
       def jira_message(response)
+        puts "room #{response.message.source.room} source #{response.message.source.inspect}"
+        puts "rooms #{config.rooms}"
+        return if config.rooms and !config.rooms.include?(response.message.source.room)
         return if config.ignore.include?(response.user.name)
         @jira ||= JiraGateway.new(http, config)
         Set.new(response.matches).each do | key |

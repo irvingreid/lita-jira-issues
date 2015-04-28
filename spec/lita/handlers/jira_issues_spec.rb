@@ -2,6 +2,12 @@ require "spec_helper"
 
 describe Lita::Handlers::JiraIssues, lita_handler: true do
 
+  before(:each) do
+    registry.config.handlers.jira_issues.url = 'http://jira.local'
+    registry.config.handlers.jira_issues.username = 'user'
+    registry.config.handlers.jira_issues.password = 'pass'
+  end
+
   it { is_expected.to route('JIRA-123').to(:jira_message) }
   it { is_expected.to route('user talking about something JIRA-123 had key').to(:jira_message) }
 
@@ -9,6 +15,11 @@ describe Lita::Handlers::JiraIssues, lita_handler: true do
     allow_any_instance_of(JiraGateway).to receive(:data_for_issue)
       .with(key)
       .and_return(result)
+  end
+
+  # Re-implement lita/rspec/Handler#send_message to support including a room
+  def send_room_message(body, room)
+    robot.receive(Lita::Message.new(robot, body, Lita::Source.new(user: user, room: room)))
   end
 
   def mock_jira_424
@@ -31,15 +42,7 @@ describe Lita::Handlers::JiraIssues, lita_handler: true do
     })
   end
 
-  config = Lita.config.handlers.jira_issues
-  before(:each) do
-    config.url = 'http://jira.local'
-    config.username = 'user'
-    config.password = 'pass'
-  end
-
   describe 'Looking up keys' do
-
     it 'should reply with JIRA description if one seen' do
       mock_jira_424
       send_message('Some message KEY-424 more text')
@@ -78,7 +81,7 @@ http://jira.local/browse/PROJ-9872
     end
 
     it 'should handle ignoring users' do
-      Lita.config.handlers.jira_issues.ignore = ['Bob Smith']
+      registry.config.handlers.jira_issues.ignore = ['Bob Smith']
 
       mock_jira('KEY-424', {
         key:'KEY-424',
@@ -137,9 +140,19 @@ http://jira.local/browse/PROJ-9872
 
   end
 
+  describe 'with a room list set' do
+    it 'should respond to the configured room' do
+      @test_room = '1234_567@chat.hipchat.com'
+      registry.config.handlers.jira_issues.rooms = [@test_room]
+      mock_jira_424
+      send_room_message('Some message KEY-424 more', @test_room)
+      expect(replies.size).to eq(1)
+    end
+  end
+
   describe 'set to one-line format' do
     before(:each) do
-      config.format = 'one-line'
+      registry.config.handlers.jira_issues.format = 'one-line'
     end
 
     it 'should display compact version' do
