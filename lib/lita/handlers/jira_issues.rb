@@ -17,8 +17,6 @@ module Lita
       }
 
       def jira_message(response)
-        puts "room #{response.message.source.room} source #{response.message.source.inspect}"
-        puts "rooms #{config.rooms}"
         return if config.rooms and !config.rooms.include?(response.message.source.room)
         return if config.ignore.include?(response.user.name)
         @jira ||= JiraGateway.new(http, config)

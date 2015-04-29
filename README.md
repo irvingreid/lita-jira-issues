@@ -48,6 +48,14 @@ You can select a compact one line issue summary using the format configuration p
 config.handlers.jira_issues.format = 'one-line'
 ```
 
+You can limit the Jira bot to respond to a subset of the rooms watched by your chat
+handler, set the rooms configuration parameter to the list of room names. The default
+is to respond to all rooms.
+
+```ruby
+config.handlers.jira_issues.rooms = [ 'room_number@chat.hipchat.com', 'another_room' ]
+```
+
 ## Usage
 
 Simply mention any JIRA valid key in upper or lower case, eg. JIRA-123, proj-8,

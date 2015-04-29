@@ -140,25 +140,29 @@ http://jira.local/browse/PROJ-9872
 
   end
 
-  describe 'with a room list set' do
-    it 'should respond to the configured room' do
-      @test_room = '1234_567@chat.hipchat.com'
-      registry.config.handlers.jira_issues.rooms = [@test_room]
-      mock_jira_424
-      send_room_message('Some message KEY-424 more', @test_room)
-      expect(replies.size).to eq(1)
-    end
-  end
-
   describe 'set to one-line format' do
-    before(:each) do
-      registry.config.handlers.jira_issues.format = 'one-line'
-    end
-
     it 'should display compact version' do
+      registry.config.handlers.jira_issues.format = 'one-line'
       mock_jira_424
       send_message('Some message KEY-424 more text')
       expect(replies.last).to eq("http://jira.local/browse/KEY-424 - Fixed, User - Another issue")
+    end
+  end
+
+  describe 'with a room list set' do
+    before(:each) do
+      @test_room = '1234_567@chat.hipchat.com'
+      registry.config.handlers.jira_issues.rooms = [@test_room]
+      mock_jira_424
+    end
+
+    it 'should respond to the configured room' do
+      send_room_message('Some message KEY-424 more', @test_room)
+      expect(replies.size).to eq(1)
+    end
+    it 'should not respond to a different room' do
+      send_room_message('Some message KEY-424 more', "NOT #{@test_room}")
+      expect(replies.size).to eq(0)
     end
   end
 end
